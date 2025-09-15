@@ -1,0 +1,60 @@
+name: Approve job
+on:
+  issues:
+    types: [labeled]
+
+permissions:
+  contents: write
+
+jobs:
+  approve:
+    if: github.event.label.name == 'approved'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Extract pending file path from issue
+        id: parse
+        uses: actions/github-script@v7
+        with:
+          result-encoding: string
+          script: |
+            const body = context.payload.issue.body || ''
+            const m = body.match(/Pending file:\s*([^\s]+)/i)
+            if (!m) core.setFailed('No pending file path in issue body')
+            return m[1]
+
+      - name: Move to approved and update index
+        run: |
+          PENDING="${{ steps.parse.outputs.result }}"
+          NAME="$(basename "$PENDING")"
+          mkdir -p community/approved/jobs
+          cp "$PENDING" "community/approved/jobs/$NAME"
+
+          INDEX="community/approved/index.json"
+          mkdir -p "$(dirname "$INDEX")"
+          [ -f "$INDEX" ] || echo "[]" > "$INDEX"
+
+          # añadir entrada (si ya existe, la reemplaza)
+          node - <<'NODE'
+          const fs = require('fs')
+          const idxPath = 'community/approved/index.json'
+          const list = JSON.parse(fs.readFileSync(idxPath,'utf8'))
+          const name = process.env.NAME
+          const entry = {
+            filename: name,
+            path: 'community/approved/jobs/' + name,
+            addedAt: new Date().toISOString()
+          }
+          const i = list.findIndex(x => x.filename === name)
+          if (i === -1) list.push(entry); else list[i] = entry
+          fs.writeFileSync(idxPath, JSON.stringify(list, null, 2))
+          NODE
+
+          git config user.name  "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add community/approved/jobs community/approved/index.json
+          git commit -m "feat(community): approve $NAME"
+          git push
+        env:
+          NAME: ${{ steps.parse.outputs.result && steps.parse.outputs.result != '' && fromJSON('"' + steps.parse.outputs.result.split('/').slice(-1)[0] + '"') }}
