@@ -1,1 +1,14 @@
-
+[
+  {
+    "file": "lumberjack.json",
+    "name": "Lumberjack",
+    "img": "img/lumberjack.jpg",
+    "uid": "123-456-789"
+  },
+  {
+    "file": "farmer.json",
+    "name": "Farmer",
+    "img": "img/farmer.jpg",
+    "uid": "987-654-321"
+  }
+]
