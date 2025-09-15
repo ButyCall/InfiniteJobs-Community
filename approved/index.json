@@ -1,14 +1,10 @@
 [
   {
-    "file": "lumberjack.json",
     "name": "Lumberjack",
-    "img": "img/lumberjack.jpg",
-    "uid": "123-456-789"
-  },
-  {
-    "file": "farmer.json",
-    "name": "Farmer",
-    "img": "img/farmer.jpg",
-    "uid": "987-654-321"
+    "path": "community/approved/lumberjack.json",
+    "image": "https://…/thumbs/lumberjack.png",
+    "author": "buty",
+    "description": "Corta madera y entrega.",
+    "updated_at": "2025-09-15T10:00:00Z"
   }
 ]
